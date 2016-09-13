@@ -37,6 +37,9 @@ var ErrRequest = errors.New("The remote service responded but the request could 
 // ErrNoURL happens when the remote service is expected to respond with a remote URL but doesn't
 var ErrNoURL = errors.New("The remote service did not respond with a remote URL when expected")
 
+// ErrProxyDead happens when the provided proxy does not respond.
+var ErrProxyDead = errors.New("Dead proxy")
+
 // GetErrorFromStatus will, depending on the status code, give you an error or nil if there is no error
 func GetErrorFromStatus(status protos.ResponseEnvelope_StatusCode) error {
 	switch status {
