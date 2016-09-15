@@ -16,6 +16,8 @@ import (
 
 const rpcUserAgent = "Niantic App"
 
+var ProxyHost = ""
+
 func raise(message string) error {
 	return fmt.Errorf("rpc/client: %s", message)
 }
@@ -42,7 +44,7 @@ func NewRPC() *RPC {
 }
 
 // Request queries the Pokémon Go API will all pending requests
-func (c *RPC) Request(ctx context.Context, endpoint string, requestEnvelope *protos.RequestEnvelope) (responseEnvelope *protos.ResponseEnvelope, err error) {
+func (c *RPC) Request(ctx context.Context, endpoint string, requestEnvelope *protos.RequestEnvelope, proxyId string) (responseEnvelope *protos.ResponseEnvelope, err error) {
 	responseEnvelope = &protos.ResponseEnvelope{}
 
 	// Build request
@@ -56,6 +58,12 @@ func (c *RPC) Request(ctx context.Context, endpoint string, requestEnvelope *pro
 		return responseEnvelope, raise("Unable to create the request")
 	}
 	request.Header.Add("User-Agent", rpcUserAgent)
+	// Proxy stuff
+	if proxyId != "" {
+		request.Header.Add("Proxy-Id", proxyId)
+		request.Header.Add("Final-Host", endpoint)
+		request.Host = ProxyHost
+	}
 
 	// Perform call to API
 	response, err := ctxhttp.Do(ctx, c.http, request)

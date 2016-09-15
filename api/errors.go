@@ -40,6 +40,12 @@ var ErrNoURL = errors.New("The remote service did not respond with a remote URL 
 // ErrProxyDead happens when the provided proxy does not respond.
 var ErrProxyDead = errors.New("Dead proxy")
 
+// ErrAccountBanned happens when a request is sent with a banned account
+var ErrAccountBanned = errors.New("Account is banned")
+
+// ErrIpSoftBanned happens when a request is sent from a soft banned ip
+var ErrIpSoftBanned = errors.New("IP is softbanned")
+
 // GetErrorFromStatus will, depending on the status code, give you an error or nil if there is no error
 func GetErrorFromStatus(status protos.ResponseEnvelope_StatusCode) error {
 	switch status {

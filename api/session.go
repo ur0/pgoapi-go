@@ -101,7 +101,7 @@ func (s *Session) debugProtoMessage(label string, pb proto.Message) {
 }
 
 // Call queries the Pokémon Go API through RPC protobuf
-func (s *Session) Call(ctx context.Context, requests []*protos.Request) (*protos.ResponseEnvelope, error) {
+func (s *Session) Call(ctx context.Context, requests []*protos.Request, proxyId string) (*protos.ResponseEnvelope, error) {
 
 	requestEnvelope := &protos.RequestEnvelope{
 		RequestId:  uint64(8145806132888207460),
@@ -191,7 +191,7 @@ func (s *Session) Call(ctx context.Context, requests []*protos.Request) (*protos
 
 	s.debugProtoMessage("request envelope", requestEnvelope)
 
-	responseEnvelope, err := s.rpc.Request(ctx, s.getURL(), requestEnvelope)
+	responseEnvelope, err := s.rpc.Request(ctx, s.getURL(), requestEnvelope, proxyId)
 
 	s.debugProtoMessage("response envelope", responseEnvelope)
 
@@ -204,7 +204,7 @@ func (s *Session) MoveTo(location *Location) {
 }
 
 // Init initializes the client by performing full authentication
-func (s *Session) Init(ctx context.Context) error {
+func (s *Session) Init(ctx context.Context, proxyId string) error {
 	_, err := s.provider.Login(ctx)
 	if err != nil {
 		return err
@@ -227,7 +227,7 @@ func (s *Session) Init(ctx context.Context) error {
 		{protos.RequestType_DOWNLOAD_SETTINGS, settingsMessage},
 	}
 
-	response, err := s.Call(ctx, requests)
+	response, err := s.Call(ctx, requests, proxyId)
 	if err != nil {
 		return err
 	}
@@ -245,7 +245,7 @@ func (s *Session) Init(ctx context.Context) error {
 }
 
 // Announce publishes the player's presence and returns the map environment
-func (s *Session) Announce(ctx context.Context) (mapObjects *protos.GetMapObjectsResponse, err error) {
+func (s *Session) Announce(ctx context.Context, proxyId string) (mapObjects *protos.GetMapObjectsResponse, err error) {
 
 	cellIDs := s.location.GetCellIDs()
 	lastTimestamp := time.Now().Unix() * 1000
@@ -278,7 +278,7 @@ func (s *Session) Announce(ctx context.Context) (mapObjects *protos.GetMapObject
 		{protos.RequestType_GET_MAP_OBJECTS, getMapObjectsMessage},
 	}
 
-	response, err := s.Call(ctx, requests)
+	response, err := s.Call(ctx, requests, proxyId)
 	if err != nil {
 		return mapObjects, ErrRequest
 	}
@@ -298,9 +298,9 @@ func (s *Session) Announce(ctx context.Context) (mapObjects *protos.GetMapObject
 }
 
 // GetPlayer returns the current player profile
-func (s *Session) GetPlayer(ctx context.Context) (*protos.GetPlayerResponse, error) {
+func (s *Session) GetPlayer(ctx context.Context, proxyId string) (*protos.GetPlayerResponse, error) {
 	requests := []*protos.Request{{RequestType: protos.RequestType_GET_PLAYER}}
-	response, err := s.Call(ctx, requests)
+	response, err := s.Call(ctx, requests, proxyId)
 	if err != nil {
 		return nil, err
 	}
@@ -317,14 +317,14 @@ func (s *Session) GetPlayer(ctx context.Context) (*protos.GetPlayerResponse, err
 }
 
 // GetPlayerMap returns the surrounding map cells
-func (s *Session) GetPlayerMap(ctx context.Context) (*protos.GetMapObjectsResponse, error) {
-	return s.Announce(ctx)
+func (s *Session) GetPlayerMap(ctx context.Context, proxyId string) (*protos.GetMapObjectsResponse, error) {
+	return s.Announce(ctx, proxyId)
 }
 
 // GetInventory returns the player items
-func (s *Session) GetInventory(ctx context.Context) (*protos.GetInventoryResponse, error) {
+func (s *Session) GetInventory(ctx context.Context, proxyId string) (*protos.GetInventoryResponse, error) {
 	requests := []*protos.Request{{RequestType: protos.RequestType_GET_INVENTORY}}
-	response, err := s.Call(ctx, requests)
+	response, err := s.Call(ctx, requests, proxyId)
 	if err != nil {
 		return nil, err
 	}
