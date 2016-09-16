@@ -280,6 +280,9 @@ func (s *Session) Announce(ctx context.Context, proxyId string) (mapObjects *pro
 
 	response, err := s.Call(ctx, requests, proxyId)
 	if err != nil {
+		if err == ErrProxyDead {
+			return mapObjects, err
+		}
 		return mapObjects, ErrRequest
 	}
 
