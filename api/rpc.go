@@ -54,17 +54,23 @@ func (c *RPC) Request(ctx context.Context, endpoint string, requestEnvelope *pro
 		return responseEnvelope, raise("Could not encode request body")
 	}
 	requestReader := bytes.NewReader(requestBytes)
-	request, err := http.NewRequest("POST", endpoint, requestReader)
+
+	// Create request
+	var request *http.Request
+	if proxyId != "" {
+		request, err = http.NewRequest("POST", ProxyHost, requestReader)
+		request.Header.Add("Proxy-Id", proxyId)
+		request.Header.Add("Final-Host", endpoint)
+		request.Host = ProxyHost
+	} else {
+		request, err = http.NewRequest("POST", endpoint, requestReader)
+	}
 	if err != nil {
 		return responseEnvelope, raise("Unable to create the request")
 	}
 	request.Header.Add("User-Agent", rpcUserAgent)
-	// Proxy stuff
-	if proxyId != "" {
-		request.Header.Add("Proxy-Id", proxyId)
-		request.Header.Add("Final-Host", endpoint)
-		request.Host = ProxyHost
-	}
+
+
 
 	// Perform call to API
 	response, err := ctxhttp.Do(ctx, c.http, request)
