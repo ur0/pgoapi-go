@@ -13,6 +13,7 @@ import (
 
 	protos "github.com/pogodevorg/POGOProtos-go"
 	"encoding/json"
+	"encoding/base64"
 )
 
 const rpcUserAgent = "Niantic App"
@@ -70,8 +71,6 @@ func (c *RPC) Request(ctx context.Context, endpoint string, requestEnvelope *pro
 	}
 	request.Header.Add("User-Agent", rpcUserAgent)
 
-
-
 	// Perform call to API
 	response, err := ctxhttp.Do(ctx, c.http, request)
 	if err != nil {
@@ -79,7 +78,7 @@ func (c *RPC) Request(ctx context.Context, endpoint string, requestEnvelope *pro
 	}
 	defer response.Body.Close()
 
-	if response.StatusCode == 500 {
+	if response.StatusCode == 400 {
 		return responseEnvelope, ErrProxyDead
 	}
 
@@ -102,7 +101,13 @@ func (c *RPC) Request(ctx context.Context, endpoint string, requestEnvelope *pro
 		if proxyResponse.Status != 200 {
 			return responseEnvelope, raise(fmt.Sprintf("Status code was %d, expected 200", proxyResponse.Status))
 		}
-		proto.Unmarshal([]byte(proxyResponse.Response), responseEnvelope)
+
+		decoded, err := base64.StdEncoding.DecodeString(proxyResponse.Response)
+		if err != nil {
+			return  responseEnvelope, err
+		}
+
+		proto.Unmarshal(decoded, responseEnvelope)
 	} else {
 		proto.Unmarshal(responseBytes, responseEnvelope)
 	}
