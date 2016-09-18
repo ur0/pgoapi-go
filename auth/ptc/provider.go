@@ -7,8 +7,11 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/cookiejar"
-	"net/url"
 	"strings"
+
+	"net/url"
+
+	"encoding/base64"
 
 	"golang.org/x/net/context/ctxhttp"
 )
@@ -65,9 +68,21 @@ func (p *Provider) GetAccessToken() string {
 }
 
 // Login retrieves an access token from the Pokémon Trainer's Club
-func (p *Provider) Login(ctx context.Context) (string, error) {
-	req1, _ := http.NewRequest("GET", loginURL, nil)
+func (p *Provider) Login(ctx context.Context, proxyId string) (string, error) {
+
+	requestUrl := loginURL
+
+	if proxyId != "" {
+		requestUrl = "http://localhost:8080"
+	}
+
+	req1, _ := http.NewRequest("GET", requestUrl, nil)
 	req1.Header.Set("User-Agent", "niantic")
+
+	if proxyId != "" {
+		req1.Header.Add("Proxy-Id", proxyId)
+		req1.Header.Add("Final-Host", loginURL)
+	}
 
 	resp1, err1 := ctxhttp.Do(ctx, p.http, req1)
 	if err1 != nil {
@@ -77,6 +92,19 @@ func (p *Provider) Login(ctx context.Context) (string, error) {
 	defer resp1.Body.Close()
 	body1, _ := ioutil.ReadAll(resp1.Body)
 	var loginRespBody loginRequest
+
+	if proxyId != "" {
+		var proxyResponse = &ProxyResponse{}
+		err := json.Unmarshal(body1, proxyResponse)
+		if err != nil {
+			return "", err
+		}
+		body1, err = base64.StdEncoding.DecodeString(proxyResponse.Response)
+		if err != nil {
+			return "", err
+		}
+	}
+
 	json.Unmarshal(body1, &loginRespBody)
 	resp1.Body.Close()
 
@@ -89,27 +117,52 @@ func (p *Provider) Login(ctx context.Context) (string, error) {
 
 	loginFormData := strings.NewReader(loginForm.Encode())
 
-	req2, _ := http.NewRequest("POST", loginURL, loginFormData)
+	req2, _ := http.NewRequest("POST", requestUrl, loginFormData)
 	req2.Header.Set("User-Agent", "niantic")
 	req2.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	resp2, err2 := ctxhttp.Do(ctx, p.http, req2)
-	if _, ok2 := err2.(*url.Error); !ok2 {
+	if proxyId != "" {
+		req2.Header.Add("Proxy-Id", proxyId)
+		req2.Header.Add("Final-Host", loginURL)
+	}
 
+	resp2, err2 := ctxhttp.Do(ctx, p.http, req2)
+	var proxyResponse2 = &ProxyResponse{}
+	if _, ok2 := err2.(*url.Error); !ok2 {
 		defer resp2.Body.Close()
 		body2, _ := ioutil.ReadAll(resp2.Body)
 		var respBody loginRequest
+		statusCode := resp2.StatusCode
+		if proxyId != "" {
+
+			err := json.Unmarshal(body2, proxyResponse2)
+			if err != nil {
+				return "", err
+			}
+			body2, err = base64.StdEncoding.DecodeString(proxyResponse2.Response)
+			if err != nil {
+				return "", err
+			}
+			statusCode = proxyResponse2.Status
+		}
+
 		json.Unmarshal(body2, &respBody)
 		resp2.Body.Close()
 
 		if len(respBody.Errors) > 0 {
 			return loginError(respBody.Errors[0])
 		}
-
-		return loginError("Could not request authorization")
+		if statusCode != 302 {
+			return loginError("Could not request authorization")
+		}
 	}
 
-	location, _ := url.Parse(resp2.Header.Get("Location"))
+	var location *url.URL
+	if proxyId != "" {
+		location, _ = url.Parse(proxyResponse2.Location)
+	} else {
+		location, _ = url.Parse(resp2.Header.Get("Location"))
+	}
 	ticket := location.Query().Get("ticket")
 
 	authorizeForm := url.Values{}
@@ -120,10 +173,19 @@ func (p *Provider) Login(ctx context.Context) (string, error) {
 	authorizeForm.Set("code", ticket)
 
 	authorizeFormData := strings.NewReader(authorizeForm.Encode())
-
-	req3, _ := http.NewRequest("POST", authorizeURL, authorizeFormData)
+	var req3 *http.Request
+	if proxyId != "" {
+		req3, _ = http.NewRequest("POST", requestUrl, authorizeFormData)
+	} else {
+		req3, _ = http.NewRequest("POST", authorizeURL, authorizeFormData)
+	}
 	req3.Header.Set("User-Agent", "niantic")
 	req3.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	if proxyId != "" {
+		req3.Header.Add("Proxy-Id", proxyId)
+		req3.Header.Add("Final-Host", authorizeURL)
+	}
 
 	resp3, err3 := ctxhttp.Do(ctx, p.http, req3)
 	if err3 != nil {
@@ -131,9 +193,28 @@ func (p *Provider) Login(ctx context.Context) (string, error) {
 	}
 
 	b, _ := ioutil.ReadAll(resp3.Body)
+
+	if proxyId != "" {
+		var proxyResponse = &ProxyResponse{}
+		err := json.Unmarshal(b, proxyResponse)
+		if err != nil {
+			return "", err
+		}
+		b, err = base64.StdEncoding.DecodeString(proxyResponse.Response)
+		if err != nil {
+			return "", err
+		}
+	}
+
 	query, _ := url.ParseQuery(string(b))
 
 	p.ticket = query.Get("access_token")
 
 	return p.ticket, nil
+}
+
+type ProxyResponse struct {
+	Status   int
+	Response string
+	Location string
 }

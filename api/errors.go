@@ -54,7 +54,7 @@ func GetErrorFromStatus(status protos.ResponseEnvelope_StatusCode) error {
 	case protos.ResponseEnvelope_OK_RPC_URL_IN_RESPONSE:
 		return ErrNewRPCURL
 	case protos.ResponseEnvelope_BAD_REQUEST:
-		return ErrBadRequest
+		return ErrAccountBanned
 	case protos.ResponseEnvelope_INVALID_REQUEST:
 		return ErrInvalidRequest
 	case protos.ResponseEnvelope_INVALID_PLATFORM_REQUEST:

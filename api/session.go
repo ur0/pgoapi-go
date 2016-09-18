@@ -7,12 +7,13 @@ import (
 	"log"
 	"time"
 
+	"github.com/femot/pgoapi-go/auth"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
 
-	protos "github.com/pogodevorg/POGOProtos-go"
-	"github.com/pogodevorg/pgoapi-go/auth"
 	"errors"
+
+	protos "github.com/pogodevorg/POGOProtos-go"
 )
 
 const defaultURL = "https://pgorelease.nianticlabs.com/plfe/rpc"
@@ -205,7 +206,7 @@ func (s *Session) MoveTo(location *Location) {
 
 // Init initializes the client by performing full authentication
 func (s *Session) Init(ctx context.Context, proxyId string) error {
-	_, err := s.provider.Login(ctx)
+	_, err := s.provider.Login(ctx, proxyId)
 	if err != nil {
 		return err
 	}
@@ -283,11 +284,11 @@ func (s *Session) Announce(ctx context.Context, proxyId string) (mapObjects *pro
 		if err == ErrProxyDead {
 			return mapObjects, err
 		}
-		return mapObjects, ErrRequest
+		return mapObjects, GetErrorFromStatus(response.StatusCode)
 	}
 
 	mapObjects = &protos.GetMapObjectsResponse{}
-	if(len(response.Returns) < 5) {
+	if len(response.Returns) < 5 {
 		return nil, errors.New("Empty response")
 	}
 	err = proto.Unmarshal(response.Returns[5], mapObjects)
