@@ -94,6 +94,9 @@ func (p *Provider) Login(ctx context.Context, proxyId string) (string, error) {
 	var loginRespBody loginRequest
 
 	if proxyId != "" {
+		if resp1.StatusCode == 400 {
+			return "", errors.New("Dead proxy")
+		}
 		var proxyResponse = &ProxyResponse{}
 		err := json.Unmarshal(body1, proxyResponse)
 		if err != nil {
@@ -134,7 +137,9 @@ func (p *Provider) Login(ctx context.Context, proxyId string) (string, error) {
 		var respBody loginRequest
 		statusCode := resp2.StatusCode
 		if proxyId != "" {
-
+			if resp2.StatusCode == 400 {
+				return "", errors.New("Dead proxy")
+			}
 			err := json.Unmarshal(body2, proxyResponse2)
 			if err != nil {
 				return "", err
@@ -195,6 +200,9 @@ func (p *Provider) Login(ctx context.Context, proxyId string) (string, error) {
 	b, _ := ioutil.ReadAll(resp3.Body)
 
 	if proxyId != "" {
+		if resp3.StatusCode == 400 {
+			return "", errors.New("Dead proxy")
+		}
 		var proxyResponse = &ProxyResponse{}
 		err := json.Unmarshal(b, proxyResponse)
 		if err != nil {
