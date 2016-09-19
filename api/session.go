@@ -10,9 +10,10 @@ import (
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
 
-	protos "github.com/pogodevorg/POGOProtos-go"
-	"github.com/pogodevorg/pgoapi-go/auth"
 	"errors"
+
+	"github.com/femot/pgoapi-go/auth"
+	protos "github.com/pogodevorg/POGOProtos-go"
 )
 
 const defaultURL = "https://pgorelease.nianticlabs.com/plfe/rpc"
@@ -287,7 +288,7 @@ func (s *Session) Announce(ctx context.Context, proxyId string) (mapObjects *pro
 	}
 
 	mapObjects = &protos.GetMapObjectsResponse{}
-	if(len(response.Returns) < 5) {
+	if len(response.Returns) < 5 {
 		return nil, errors.New("Empty response")
 	}
 	err = proto.Unmarshal(response.Returns[5], mapObjects)

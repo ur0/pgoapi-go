@@ -11,9 +11,10 @@ import (
 	"github.com/golang/protobuf/proto"
 	"golang.org/x/net/context/ctxhttp"
 
-	protos "github.com/pogodevorg/POGOProtos-go"
-	"encoding/json"
 	"encoding/base64"
+	"encoding/json"
+
+	protos "github.com/pogodevorg/POGOProtos-go"
 )
 
 const rpcUserAgent = "Niantic App"
@@ -104,7 +105,7 @@ func (c *RPC) Request(ctx context.Context, endpoint string, requestEnvelope *pro
 
 		decoded, err := base64.StdEncoding.DecodeString(proxyResponse.Response)
 		if err != nil {
-			return  responseEnvelope, err
+			return responseEnvelope, err
 		}
 
 		proto.Unmarshal(decoded, responseEnvelope)

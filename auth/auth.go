@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/pogodevorg/pgoapi-go/auth/google"
-	"github.com/pogodevorg/pgoapi-go/auth/ptc"
+	"github.com/femot/pgoapi-go/auth/google"
+	"github.com/femot/pgoapi-go/auth/ptc"
 )
 
 // Provider is a common interface for managing auth tokens with the different third party authenticators
