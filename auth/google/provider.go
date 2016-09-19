@@ -52,7 +52,7 @@ func (p *Provider) GetAccessToken() string {
 }
 
 // Login retrieves an access token from the Pokémon Trainer's Club
-func (p *Provider) Login(ctx context.Context, proxyId string) (string, error) {
+func (p *Provider) Login(ctx context.Context) (string, error) {
 	sig, err := signature(p.username, p.password)
 	if err != nil {
 		return "", err

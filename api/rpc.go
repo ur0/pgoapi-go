@@ -3,17 +3,17 @@ package api
 import (
 	"bytes"
 	"context"
-	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/cookiejar"
 
+	"github.com/golang/protobuf/proto"
 	"golang.org/x/net/context/ctxhttp"
 
-	"github.com/golang/protobuf/proto"
 	protos "github.com/pogodevorg/POGOProtos-go"
+	"encoding/json"
+	"encoding/base64"
 )
 
 const rpcUserAgent = "Niantic App"
@@ -104,15 +104,12 @@ func (c *RPC) Request(ctx context.Context, endpoint string, requestEnvelope *pro
 
 		decoded, err := base64.StdEncoding.DecodeString(proxyResponse.Response)
 		if err != nil {
-			return responseEnvelope, err
+			return  responseEnvelope, err
 		}
 
 		proto.Unmarshal(decoded, responseEnvelope)
 	} else {
 		proto.Unmarshal(responseBytes, responseEnvelope)
-	}
-	if responseEnvelope.StatusCode != protos.ResponseEnvelope_OK && responseEnvelope.StatusCode != protos.ResponseEnvelope_OK_RPC_URL_IN_RESPONSE && responseEnvelope.StatusCode != protos.ResponseEnvelope_REDIRECT {
-		return responseEnvelope, GetErrorFromStatus(responseEnvelope.StatusCode)
 	}
 	return responseEnvelope, nil
 }
@@ -120,5 +117,4 @@ func (c *RPC) Request(ctx context.Context, endpoint string, requestEnvelope *pro
 type ProxyResponse struct {
 	Status   int
 	Response string
-	Headers  map[string]string
 }
