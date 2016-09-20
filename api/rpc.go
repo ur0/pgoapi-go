@@ -90,7 +90,7 @@ func (c *RPC) Request(ctx context.Context, endpoint string, requestEnvelope *pro
 	// Read the response
 	responseBytes, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return responseEnvelope, raise("Could not decode response body")
+		return responseEnvelope, raise("Could not read response body")
 	}
 
 	if proxyId != "" {
