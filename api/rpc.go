@@ -14,6 +14,8 @@ import (
 	"encoding/base64"
 	"encoding/json"
 
+	"log"
+
 	protos "github.com/pogodevorg/POGOProtos-go"
 )
 
@@ -108,7 +110,11 @@ func (c *RPC) Request(ctx context.Context, endpoint string, requestEnvelope *pro
 			return responseEnvelope, err
 		}
 
-		proto.Unmarshal(decoded, responseEnvelope)
+		err = proto.Unmarshal(decoded, responseEnvelope)
+		if err != nil {
+			log.Println(err)
+			return responseEnvelope, err
+		}
 	} else {
 		proto.Unmarshal(responseBytes, responseEnvelope)
 	}
