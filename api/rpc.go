@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/cookiejar"
+	"strconv"
 
 	"github.com/golang/protobuf/proto"
 	"golang.org/x/net/context/ctxhttp"
@@ -49,7 +50,7 @@ func NewRPC() *RPC {
 }
 
 // Request queries the Pokémon Go API will all pending requests
-func (c *RPC) Request(ctx context.Context, endpoint string, requestEnvelope *protos.RequestEnvelope, proxyId string) (responseEnvelope *protos.ResponseEnvelope, err error) {
+func (c *RPC) Request(ctx context.Context, endpoint string, requestEnvelope *protos.RequestEnvelope, proxyId int64) (responseEnvelope *protos.ResponseEnvelope, err error) {
 	responseEnvelope = &protos.ResponseEnvelope{}
 
 	// Build request
@@ -61,9 +62,9 @@ func (c *RPC) Request(ctx context.Context, endpoint string, requestEnvelope *pro
 
 	// Create request
 	var request *http.Request
-	if proxyId != "" {
+	if proxyId != -1 {
 		request, err = http.NewRequest("POST", ProxyHost, requestReader)
-		request.Header.Add("Proxy-Id", proxyId)
+		request.Header.Add("Proxy-Id", strconv.FormatInt(proxyId, 10))
 		request.Header.Add("Final-Host", endpoint)
 		request.Host = ProxyHost
 	} else {
@@ -95,7 +96,7 @@ func (c *RPC) Request(ctx context.Context, endpoint string, requestEnvelope *pro
 		return responseEnvelope, raise("Could not read response body")
 	}
 
-	if proxyId != "" {
+	if proxyId != -1 {
 		var proxyResponse = &ProxyResponse{}
 		err = json.Unmarshal(responseBytes, proxyResponse)
 		if err != nil {
