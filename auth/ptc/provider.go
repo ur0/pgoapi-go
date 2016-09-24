@@ -95,12 +95,10 @@ func (p *Provider) Login(ctx context.Context) (string, error) {
 
 	resp2, err2 := ctxhttp.Do(ctx, p.http, req2)
 	if _, ok2 := err2.(*url.Error); !ok2 {
-
-		defer resp2.Body.Close()
 		body2, _ := ioutil.ReadAll(resp2.Body)
+		resp2.Body.Close()
 		var respBody loginRequest
 		json.Unmarshal(body2, &respBody)
-		resp2.Body.Close()
 
 		if len(respBody.Errors) > 0 {
 			return loginError(respBody.Errors[0])
