@@ -94,6 +94,9 @@ func (p *Provider) Login(ctx context.Context) (string, error) {
 	req2.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	resp2, err2 := ctxhttp.Do(ctx, p.http, req2)
+	if resp2 == nil {
+		return "", err2
+	}
 	if _, ok2 := err2.(*url.Error); !ok2 {
 		body2, _ := ioutil.ReadAll(resp2.Body)
 		resp2.Body.Close()
