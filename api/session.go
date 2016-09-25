@@ -64,7 +64,7 @@ func NewSession(provider auth.Provider, location *Location, feed Feed, crypto Cr
 // if the session has a ticket and it is still valid, the return value is false
 // if there is no ticket, or the ticket is expired, the return value is true
 func (s *Session) IsExpired() bool {
-	if !s.hasTicket {
+	if !s.hasTicket || s.ticket == nil {
 		return true
 	}
 	return s.ticket.ExpireTimestampMs < getTimestamp(time.Now())
