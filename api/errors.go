@@ -7,6 +7,9 @@ import (
 	protos "github.com/pogodevorg/POGOProtos-go"
 )
 
+// ErrCheckChallenge happens when the account gets flagged for a ReCaptcha challenge
+var ErrCheckChallenge = errors.New("ReCaptcha challenge was sent")
+
 // ErrFormatting happens when the something in the request body was not right
 var ErrFormatting = errors.New("Request was malformatted and could not be performed")
 

@@ -277,6 +277,7 @@ func (s *Session) Announce(ctx context.Context, proxyId int64) (mapObjects *prot
 		{RequestType: protos.RequestType_CHECK_AWARDED_BADGES},
 		{protos.RequestType_DOWNLOAD_SETTINGS, settingsMessage},
 		{protos.RequestType_GET_MAP_OBJECTS, getMapObjectsMessage},
+		{RequestType: protos.RequestType_CHECK_CHALLENGE},
 	}
 
 	response, err := s.Call(ctx, requests, proxyId)
@@ -297,6 +298,12 @@ func (s *Session) Announce(ctx context.Context, proxyId int64) (mapObjects *prot
 	}
 	s.feed.Push(mapObjects)
 	s.debugProtoMessage("response return[5]", mapObjects)
+
+	challenge := protos.CheckChallengeResponse{}
+	err = proto.Unmarshal(response.Returns[6], &challenge)
+	if challenge.ShowChallenge {
+		return mapObjects, ErrCheckChallenge
+	}
 
 	return mapObjects, GetErrorFromStatus(response.StatusCode)
 }
