@@ -1,11 +1,12 @@
 package api
 
 import (
-	"context"
 	"crypto/rand"
 	"fmt"
 	"log"
 	"time"
+
+	"golang.org/x/net/context"
 
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"

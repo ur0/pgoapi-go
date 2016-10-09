@@ -2,7 +2,7 @@ package google
 
 import (
 	"compress/gzip"
-	"context"
+	"golang.org/x/net/context"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha1"

@@ -1,7 +1,7 @@
 package cli
 
 import (
-	"context"
+	"golang.org/x/net/context"
 
 	"github.com/urfave/cli"
 

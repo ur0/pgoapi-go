@@ -1,7 +1,7 @@
 package ptc
 
 import (
-	"context"
+	"golang.org/x/net/context"
 	"encoding/json"
 	"errors"
 	"io/ioutil"

@@ -20,7 +20,7 @@ package main
 import (
   "encoding/json"
   "fmt"
-  "context"
+  "golang.org/x/net/context"
 
   "github.com/pogodevorg/pgoapi-go/api"
   "github.com/pogodevorg/pgoapi-go/auth"
