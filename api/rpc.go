@@ -18,6 +18,7 @@ import (
 	"log"
 
 	protos "github.com/pogodevorg/POGOProtos-go"
+	"os"
 )
 
 const rpcUserAgent = "Niantic App"
@@ -55,6 +56,8 @@ func (c *RPC) Request(ctx context.Context, endpoint string, requestEnvelope *pro
 
 	// Build request
 	requestBytes, err := proto.Marshal(requestEnvelope)
+	ioutil.WriteFile("req", requestBytes, os.FileMode(0644))
+
 	if err != nil {
 		return responseEnvelope, raise("Could not encode request body")
 	}

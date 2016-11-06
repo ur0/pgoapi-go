@@ -15,6 +15,7 @@ import (
 
 	"github.com/femot/pgoapi-go/auth"
 	protos "github.com/pogodevorg/POGOProtos-go"
+	mr "math/rand"
 )
 
 const defaultURL = "https://pgorelease.nianticlabs.com/plfe/rpc"
@@ -154,6 +155,49 @@ func (s *Session) Call(ctx context.Context, requests []*protos.Request, proxyId 
 			return nil, err
 		}
 
+		lf := make([]*protos.Signature_LocationFix, 1)
+		lf[0] = &protos.Signature_LocationFix{
+			Provider: "network",
+			TimestampSnapshot: t - getTimestamp(s.started),
+			Altitude: 4,
+			Latitude: float32(s.location.Lat),
+			Longitude: float32(s.location.Lon),
+			Speed: float32(mr.Intn(15)),
+			Course: float32(mr.Intn(360)),
+			HorizontalAccuracy: mr.Float32(),
+			VerticalAccuracy: mr.Float32(),
+			ProviderStatus: 3,
+			LocationType: 1,
+		}
+
+		si := make([]*protos.Signature_SensorInfo, 1)
+		si[0] = &protos.Signature_SensorInfo{
+			TimestampSnapshot: t - getTimestamp(s.started),
+			LinearAccelerationX: mr.Float64(),
+			LinearAccelerationY: mr.Float64(),
+			LinearAccelerationZ: mr.Float64(),
+			MagneticFieldX: mr.Float64(),
+			MagneticFieldY: mr.Float64(),
+			MagneticFieldZ: mr.Float64(),
+			MagneticFieldAccuracy: 1,
+			AttitudePitch: mr.Float64(),
+			AttitudeYaw: mr.Float64(),
+			// MAJOR TYPO IN PROTOS
+			// Not Attitude, it's altitude
+			AttitudeRoll: mr.Float64(),
+			RotationRateX: mr.Float64(),
+			RotationRateY: mr.Float64(),
+			RotationRateZ: mr.Float64(),
+			GravityX: mr.Float64(),
+			GravityY: mr.Float64(),
+			GravityZ: mr.Float64(),
+			Status: 3,
+		}
+
+		as := &protos.Signature_ActivityStatus{
+			Stationary: true,
+		}
+
 		signature := &protos.Signature{
 			RequestHash:         requestHash,
 			LocationHash1:       int32(locationHash1),
@@ -162,6 +206,9 @@ func (s *Session) Call(ctx context.Context, requests []*protos.Request, proxyId 
 			Timestamp:           t,
 			TimestampSinceStart: (t - getTimestamp(s.started)),
 			Unknown25:           -8408506833887075802,
+			LocationFix: 				 lf,
+			SensorInfo: 				 si,
+			ActivityStatus: 		 as,
 		}
 
 		signatureProto, err := proto.Marshal(signature)
