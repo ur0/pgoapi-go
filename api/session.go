@@ -114,7 +114,7 @@ func (s *Session) Call(ctx context.Context, requests []*protos.Request, proxyId 
 		Longitude: s.location.Lon,
 		Latitude:  s.location.Lat,
 
-		Accuracy: s.location.Accuracy,
+		Accuracy: int32(s.location.Accuracy),
 
 		Requests: requests,
 	}
@@ -156,11 +156,12 @@ func (s *Session) Call(ctx context.Context, requests []*protos.Request, proxyId 
 
 		signature := &protos.Signature{
 			RequestHash:         requestHash,
-			LocationHash1:       locationHash1,
-			LocationHash2:       locationHash2,
+			LocationHash1:       int32(locationHash1),
+			LocationHash2:       int32(locationHash2),
 			SessionHash:         s.hash,
 			Timestamp:           t,
 			TimestampSinceStart: (t - getTimestamp(s.started)),
+			Unknown25:           -8408506833887075802,
 		}
 
 		signatureProto, err := proto.Marshal(signature)
