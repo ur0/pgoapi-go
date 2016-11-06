@@ -1,55 +1,40 @@
 package api
 
 import (
-	"github.com/OneOfOne/xxhash"
+	"github.com/OneOfOne/Hash"
 	"github.com/golang/protobuf/proto"
 	protos "github.com/pogodevorg/POGOProtos-go"
 )
 
-const hashSeed = uint64(0x1B845238) // Static xxhash seed
+const hashSeed uint64 = uint64(0x61247FBF)
 
-func protoToXXHash64(seed uint64, pb proto.Message) (uint64, error) {
-	h := xxhash.NewS64(seed)
+func protoToHash64(seed uint64, pb proto.Message) (uint64, error) {
 	b, err := proto.Marshal(pb)
 	if err != nil {
 		return uint64(0), ErrFormatting
 	}
-	_, err = h.Write(b)
-	if err != nil {
-		return uint64(0), ErrFormatting
-	}
-	return h.Sum64(), nil
+	return Hash64Salt64(b, seed), nil
 }
 
-func protoToXXHash32(seed uint32, pb proto.Message) (uint32, error) {
-	h := xxhash.NewS32(seed)
+func protoToHash32(seed uint32, pb proto.Message) (uint32, error) {
 	b, err := proto.Marshal(pb)
 	if err != nil {
 		return uint32(0), ErrFormatting
 	}
-	_, err = h.Write(b)
-	if err != nil {
-		return uint32(0), ErrFormatting
-	}
-	return h.Sum32(), nil
+	return Hash64Salt(b, seed), nil
 }
 
-func locationToXXHash32(seed uint32, location *Location) (uint32, error) {
-	h := xxhash.NewS32(seed)
+func locationToHash32(seed uint32, location *Location) (uint32, error) {
 	b := location.GetBytes()
-	_, err := h.Write(b)
-	if err != nil {
-		return uint32(0), ErrFormatting
-	}
-	return h.Sum32(), nil
+	return Hash32Salt(b, seed), nil
 }
 
 func generateRequestHash(authTicket *protos.AuthTicket, request *protos.Request) (uint64, error) {
-	h, err := protoToXXHash64(hashSeed, authTicket)
+	h, err := protoToHash64(hashSeed, authTicket)
 	if err != nil {
 		return h, ErrFormatting
 	}
-	h, err = protoToXXHash64(h, request)
+	h, err = protoToHash64(h, request)
 	if err != nil {
 		return h, ErrFormatting
 	}
@@ -58,11 +43,11 @@ func generateRequestHash(authTicket *protos.AuthTicket, request *protos.Request)
 }
 
 func generateLocation1(authTicket *protos.AuthTicket, location *Location) (uint32, error) {
-	h, err := protoToXXHash32(uint32(hashSeed), authTicket)
+	h, err := protoToHash32(uint32(hashSeed), authTicket)
 	if err != nil {
 		return h, ErrFormatting
 	}
-	h, err = locationToXXHash32(h, location)
+	h, err = locationToHash32(h, location)
 	if err != nil {
 		return h, ErrFormatting
 	}
@@ -70,7 +55,7 @@ func generateLocation1(authTicket *protos.AuthTicket, location *Location) (uint3
 }
 
 func generateLocation2(location *Location) (uint32, error) {
-	h, err := locationToXXHash32(uint32(hashSeed), location)
+	h, err := locationToHash32(uint32(hashSeed), location)
 	if err != nil {
 		return h, ErrFormatting
 	}
