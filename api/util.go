@@ -20,7 +20,7 @@ func protoToHash32(seed uint32, pb proto.Message) (uint32, error) {
 	if err != nil {
 		return uint32(0), ErrFormatting
 	}
-	return Hash64Salt(b, seed), nil
+	return Hash32Salt(b, seed), nil
 }
 
 func locationToHash32(seed uint32, location *Location) (uint32, error) {

@@ -7,7 +7,7 @@ import (
 
 type Uint128 [2]uint64 // { high, low }
 
-const hashSeed uint32 = 0x61247FBF
+const hashSeed32 uint32 = 0x61247FBF
 const BlockSize = 128
 
 /* IOS 1.13.x */
@@ -185,7 +185,7 @@ func mul64_128(a, b uint64) Uint128 {
 }
 
 func Hash32(buffer []byte) uint32 {
-	return Hash32Salt(buffer, hashSeed)
+	return Hash32Salt(buffer, hashSeed32)
 }
 
 func Hash32Salt(buffer []byte, salt uint32) uint32 {
@@ -194,7 +194,7 @@ func Hash32Salt(buffer []byte, salt uint32) uint32 {
 }
 
 func Hash64(buffer []byte) uint64 {
-	return Hash64Salt(buffer, hashSeed)
+	return Hash64Salt(buffer, hashSeed32)
 }
 
 func Hash64Salt(buffer []byte, salt uint32) uint64 {
