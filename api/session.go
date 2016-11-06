@@ -325,8 +325,8 @@ func (s *Session) Announce(ctx context.Context, proxyId int64) (mapObjects *prot
 		{protos.RequestType_GET_INVENTORY, getInventoryMessage},
 		{RequestType: protos.RequestType_CHECK_AWARDED_BADGES},
 		{protos.RequestType_DOWNLOAD_SETTINGS, settingsMessage},
-		{RequestType: protos.RequestType_GET_BUDDY_WALKED},
 		{RequestType: protos.RequestType_CHECK_CHALLENGE},
+		{RequestType: protos.RequestType_GET_BUDDY_WALKED},
 	}
 
 	response, err := s.Call(ctx, requests, proxyId)
@@ -346,10 +346,10 @@ func (s *Session) Announce(ctx context.Context, proxyId int64) (mapObjects *prot
 		return nil, &ErrResponse{err}
 	}
 	s.feed.Push(mapObjects)
-	s.debugProtoMessage("response return[5]", mapObjects)
+	s.debugProtoMessage("response return[0]", mapObjects)
 
 	challenge := protos.CheckChallengeResponse{}
-	err = proto.Unmarshal(response.Returns[6], &challenge)
+	err = proto.Unmarshal(response.Returns[5], &challenge)
 	if challenge.ShowChallenge {
 		return mapObjects, ErrCheckChallenge
 	}
