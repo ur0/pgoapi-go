@@ -204,7 +204,8 @@ func Hash64Salt(buffer []byte, salt uint32) uint64 {
 
 	return hash(newBuffer)
 }
-                                                                                                                                                                                                       //a
+
+//a
 func Hash64Salt64(buffer []byte, salt uint64) uint64 {
 	newBuffer := make([]byte, len(buffer)+8)
 	binary.BigEndian.PutUint64(newBuffer, salt)
