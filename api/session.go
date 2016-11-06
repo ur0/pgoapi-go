@@ -157,41 +157,41 @@ func (s *Session) Call(ctx context.Context, requests []*protos.Request, proxyId 
 
 		lf := make([]*protos.Signature_LocationFix, 1)
 		lf[0] = &protos.Signature_LocationFix{
-			Provider: "network",
-			TimestampSnapshot: t - getTimestamp(s.started),
-			Altitude: 4,
-			Latitude: float32(s.location.Lat),
-			Longitude: float32(s.location.Lon),
-			Speed: float32(mr.Intn(15)),
-			Course: float32(mr.Intn(360)),
+			Provider:           "network",
+			TimestampSnapshot:  t - getTimestamp(s.started),
+			Altitude:           mr.Float32(),
+			Latitude:           float32(s.location.Lat),
+			Longitude:          float32(s.location.Lon),
+			Speed:              float32(mr.Intn(15)),
+			Course:             float32(mr.Intn(360)),
 			HorizontalAccuracy: mr.Float32(),
-			VerticalAccuracy: mr.Float32(),
-			ProviderStatus: 3,
-			LocationType: 1,
+			VerticalAccuracy:   mr.Float32(),
+			ProviderStatus:     3,
+			LocationType:       1,
 		}
 
 		si := make([]*protos.Signature_SensorInfo, 1)
 		si[0] = &protos.Signature_SensorInfo{
-			TimestampSnapshot: t - getTimestamp(s.started),
-			LinearAccelerationX: mr.Float64(),
-			LinearAccelerationY: mr.Float64(),
-			LinearAccelerationZ: mr.Float64(),
-			MagneticFieldX: mr.Float64(),
-			MagneticFieldY: mr.Float64(),
-			MagneticFieldZ: mr.Float64(),
+			TimestampSnapshot:     t - getTimestamp(s.started),
+			LinearAccelerationX:   mr.Float64(),
+			LinearAccelerationY:   mr.Float64(),
+			LinearAccelerationZ:   mr.Float64(),
+			MagneticFieldX:        mr.Float64(),
+			MagneticFieldY:        mr.Float64(),
+			MagneticFieldZ:        mr.Float64(),
 			MagneticFieldAccuracy: 1,
-			AttitudePitch: mr.Float64(),
-			AttitudeYaw: mr.Float64(),
+			AttitudePitch:         mr.Float64(),
+			AttitudeYaw:           mr.Float64(),
 			// MAJOR TYPO IN PROTOS
 			// Not Attitude, it's altitude
-			AttitudeRoll: mr.Float64(),
+			AttitudeRoll:  mr.Float64(),
 			RotationRateX: mr.Float64(),
 			RotationRateY: mr.Float64(),
 			RotationRateZ: mr.Float64(),
-			GravityX: mr.Float64(),
-			GravityY: mr.Float64(),
-			GravityZ: mr.Float64(),
-			Status: 3,
+			GravityX:      mr.Float64(),
+			GravityY:      mr.Float64(),
+			GravityZ:      mr.Float64(),
+			Status:        3,
 		}
 
 		as := &protos.Signature_ActivityStatus{
@@ -206,9 +206,9 @@ func (s *Session) Call(ctx context.Context, requests []*protos.Request, proxyId 
 			Timestamp:           t,
 			TimestampSinceStart: (t - getTimestamp(s.started)),
 			Unknown25:           -8408506833887075802,
-			LocationFix: 				 lf,
-			SensorInfo: 				 si,
-			ActivityStatus: 		 as,
+			LocationFix:         lf,
+			SensorInfo:          si,
+			ActivityStatus:      as,
 		}
 
 		signatureProto, err := proto.Marshal(signature)
@@ -320,12 +320,12 @@ func (s *Session) Announce(ctx context.Context, proxyId int64) (mapObjects *prot
 		LastTimestampMs: lastTimestamp,
 	})
 	requests := []*protos.Request{
-		{RequestType: protos.RequestType_GET_PLAYER},
+		{protos.RequestType_GET_MAP_OBJECTS, getMapObjectsMessage},
 		{RequestType: protos.RequestType_GET_HATCHED_EGGS},
 		{protos.RequestType_GET_INVENTORY, getInventoryMessage},
 		{RequestType: protos.RequestType_CHECK_AWARDED_BADGES},
 		{protos.RequestType_DOWNLOAD_SETTINGS, settingsMessage},
-		{protos.RequestType_GET_MAP_OBJECTS, getMapObjectsMessage},
+		{RequestType: protos.RequestType_GET_BUDDY_WALKED},
 		{RequestType: protos.RequestType_CHECK_CHALLENGE},
 	}
 
@@ -341,7 +341,7 @@ func (s *Session) Announce(ctx context.Context, proxyId int64) (mapObjects *prot
 	if len(response.Returns) < 5 {
 		return nil, errors.New("Empty response")
 	}
-	err = proto.Unmarshal(response.Returns[5], mapObjects)
+	err = proto.Unmarshal(response.Returns[0], mapObjects)
 	if err != nil {
 		return nil, &ErrResponse{err}
 	}
