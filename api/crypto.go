@@ -6,7 +6,7 @@ import (
 
 // Crypto is a common interface for allowing pluggable signature
 type Crypto interface {
-	CreateIV() []byte
+	CreateIV(timestampSinceStart uint32) []byte
 	Encrypt(in []byte, iv []byte) ([]byte, error)
 	Enabled() bool
 }
@@ -25,7 +25,7 @@ func (c *DefaultCrypto) CreateIV() []byte {
 	return iv
 }
 
-// Enabled returns wether or not crypto is enabled
+// Enabled returns whether or not crypto is enabled
 func (c *DefaultCrypto) Enabled() bool {
 	return false
 }

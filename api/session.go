@@ -168,7 +168,7 @@ func (s *Session) Call(ctx context.Context, requests []*protos.Request, proxyId 
 			return nil, ErrFormatting
 		}
 
-		iv := s.crypto.CreateIV()
+		iv := s.crypto.CreateIV(uint32(t - getTimestamp(s.started)))
 		encryptedSignature, err := s.crypto.Encrypt(signatureProto, iv)
 		if err != nil {
 			return nil, ErrFormatting
